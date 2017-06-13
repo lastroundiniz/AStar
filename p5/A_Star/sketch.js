@@ -1,18 +1,5 @@
-function removeFromArray(arr, elt) {
-	for (var i = arr.length-1; i >= 0; i--) {
-		if (arr[i] == elt) {
-			arr.splice(i, 1);
-		}
-	}
-}
-
-function heuristic(a,b) {
-	var d = abs(a.i-b.i) + abs(a.j-b.j);
-	return d;
-}
-
-var cols = 25;
-var rows = 25;
+var cols = 35;
+var rows = 35;
 var grid = new Array(cols);
 
 var openSet = [];
@@ -22,6 +9,20 @@ var end;
 var w, h;
 var path = [];
 var nosolution = false;
+
+function removeFromArray(arr, elt) {
+	for (var i = arr.length-1; i >= 0; i--) {
+		if (arr[i] == elt) {
+			arr.splice(i, 1);
+		}
+	}
+}
+
+function heuristic(a,b) {
+	var d = dist(a.i, a.j, b.i, b.j);
+	//var d = abs(a.i-b.i) + abs(a.j-b.j);
+	return d;
+}
 
 function Spot(i,j) {
 	this.i = i;
@@ -33,7 +34,7 @@ function Spot(i,j) {
 	this.previous = undefined;
 	this.wall = false;
 
-	if (random(1) < 0.4) {
+	if (random(1) < 0.2) {
 		this.wall = true;
 	}
 
@@ -60,6 +61,18 @@ function Spot(i,j) {
 		}
 		if (j > 0) {
 			this.neighbors.push(grid[i][j-1]);	
+		}
+		if (i > 0 && j > 0) {
+			this.neighbors.push(grid[i-1][j-1]);	
+		}
+		if (i < cols-1 && j > 0) {
+			this.neighbors.push(grid[i+1][j-1]);	
+		}
+		if (i > 0 && j < rows - 1) {
+			this.neighbors.push(grid[i-1][j+1]);	
+		}
+		if (i < cols - 1 && j < rows - 1) {
+			this.neighbors.push(grid[i+1][j+1]);	
 		}
 	}
 }
@@ -125,28 +138,32 @@ function draw() {
 
 			if(!closedSet.includes(neighbor) && !neighbor.wall) {
 				var tempG = current.g + 1;
-
+				var newPath = false;
 				if (openSet.includes(neighbor))	{
 					if (tempG < neighbor.g) {
 						neighbor.g = tempG;
+						newPath = true;
 					}
 				}
 				else {
 					neighbor.g = tempG;
+					newPath = true;
 					openSet.push(neighbor);
 				}
 
-				neighbor.h = heuristic(neighbor, end);
-				neighbor.f = neighbor.g + neighbor.h;
-				neighbor.previous = current;
+				if (newPath) {
+					neighbor.h = heuristic(neighbor, end);
+					neighbor.f = neighbor.g + neighbor.h;
+					neighbor.previous = current;
+				}
 			}
 		}
 
 	}
 	else {
 		console.log("Sem solucao!")
-		nosolution = true;
 		noLoop();
+		return;
 	}
 	background(0);
 
@@ -155,7 +172,6 @@ function draw() {
 			grid[i][j].show(color(255));
 		}
 	}
-
 
 	for (var i = 0; i < closedSet.length; i++) {
 		closedSet[i].show(color(255,0,0));
@@ -166,16 +182,14 @@ function draw() {
 	}
 
 	// Encontra o caminho
-	if (!nosolution) {
-		path = [];
-		var temp = current;
-		path.push(temp);
-		while(temp.previous) {
-			path.push(temp.previous);
-			temp = temp.previous;
-		}
+	path = [];
+	var temp = current;
+	path.push(temp);
+	while(temp.previous) {
+		path.push(temp.previous);
+		temp = temp.previous;
 	}
-	
+
 
 	for (var i =0; i < path.length; i++) {
 		path[i].show(color(0,0,255));
