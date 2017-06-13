@@ -7,7 +7,6 @@ function removeFromArray(arr, elt) {
 }
 
 function heuristic(a,b) {
-	//var d = dist(a.i, a.j, b.i, b.j);
 	var d = abs(a.i-b.i) + abs(a.j-b.j);
 	return d;
 }
@@ -22,6 +21,7 @@ var start;
 var end;
 var w, h;
 var path = [];
+var nosolution = false;
 
 function Spot(i,j) {
 	this.i = i;
@@ -31,9 +31,17 @@ function Spot(i,j) {
 	this.h = 0;
 	this.neighbors = [];
 	this.previous = undefined;
+	this.wall = false;
+
+	if (random(1) < 0.4) {
+		this.wall = true;
+	}
 
 	this.show = function(col) {
 		fill(col);
+		if(this.wall) {
+			fill(0);
+		}
 		noStroke();
 		rect(this.i*w, this.j*h, w-1, h-1);
 	}
@@ -83,6 +91,8 @@ function setup() {
 
 	start = grid[0][0];
 	end = grid[cols - 1][rows - 1];
+	start.wall = false;
+	end.wall = false;
 
 	openSet.push(start);
 
@@ -113,7 +123,7 @@ function draw() {
 		for (var i = 0; i < neighbors.length; i++) {
 			var neighbor = neighbors[i];
 
-			if(!closedSet.includes(neighbor)) {
+			if(!closedSet.includes(neighbor) && !neighbor.wall) {
 				var tempG = current.g + 1;
 
 				if (openSet.includes(neighbor))	{
@@ -134,7 +144,9 @@ function draw() {
 
 	}
 	else {
-		//sem solucao
+		console.log("Sem solucao!")
+		nosolution = true;
+		noLoop();
 	}
 	background(0);
 
@@ -153,14 +165,17 @@ function draw() {
 		openSet[i].show(color(0,255,0));
 	}
 
-
-	path = [];
-	var temp = current;
-	path.push(temp);
-	while(temp.previous) {
-		path.push(temp.previous);
-		temp = temp.previous;
+	// Encontra o caminho
+	if (!nosolution) {
+		path = [];
+		var temp = current;
+		path.push(temp);
+		while(temp.previous) {
+			path.push(temp.previous);
+			temp = temp.previous;
+		}
 	}
+	
 
 	for (var i =0; i < path.length; i++) {
 		path[i].show(color(0,0,255));
