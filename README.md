@@ -1,4 +1,3 @@
-# AStar
-AStar_JavaScript
+# aStar (A*) search algorithm
 
-Following a youtube "Coding Train" tutorial.
+Following a youtube "Coding Train" tutorial and coding with p5.js library.
